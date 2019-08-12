@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
+import Button from '@material-ui/core/Button';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -14,7 +15,6 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import FolderIcon from '@material-ui/icons/Folder';
 import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/CloudDownload';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -22,6 +22,12 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1,
       maxWidth: 752,
+    },
+    button: {
+      margin: theme.spacing(1),
+    },
+    input: {
+      display: 'none',
     },
     demo: {
       backgroundColor: theme.palette.background.paper,
@@ -32,6 +38,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+
 function generate(element: React.ReactElement) {
   return [0, 1, 2].map(value =>
     React.cloneElement(element, {
@@ -40,7 +47,27 @@ function generate(element: React.ReactElement) {
   );
 }
 
+export class Upload extends React.Component {
+  state={
+    items: [],
+    isLoading: false,
+  }
+
+  handleUnload(items: any) {
+    this.setState((state)=>{
+      return {
+        ...state,
+        items,
+      }
+    })
+  }
+  handleClick(event: any) {
+    event.handleUnload();
+  }
+}
+
 export default function InteractiveList() {
+  const handleClick = handleClick();
   const classes = useStyles();
   const [dense, setDense] = React.useState(false);
   const [secondary, setSecondary] = React.useState(false);
@@ -73,9 +100,20 @@ export default function InteractiveList() {
         <Grid item xs={12} md={6}>
         <Typography variant="h6" className={classes.title}>
             Add your SVG
-            <IconButton edge="end" aria-label="add">
-                      <AddIcon />
-                    </IconButton>
+            <label htmlFor="contained-button-file">
+            <input
+        accept="image/*"
+        className={classes.input}
+        id="contained-button-file"
+        multiple
+        type="file"
+      />
+      <label htmlFor="contained-button-file">
+        <Button variant="contained" component="span" className={classes.button} onClick={handleClick}>
+          Upload
+        </Button>
+      </label>
+      </label>
           </Typography>
           <div className={classes.demo}>
             <List dense={dense}>
