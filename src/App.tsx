@@ -1,173 +1,112 @@
 import * as React from 'react';
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import Button from '@material-ui/core/Button';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
-import IconButton from '@material-ui/core/IconButton';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import FolderIcon from '@material-ui/icons/Folder';
-import DeleteIcon from '@material-ui/icons/Delete';
-import DownloadIcon from '@material-ui/icons/CloudDownload';
+import * as CopyToClipboard from 'react-copy-to-clipboard';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-      maxWidth: 752,
-    },
-    button: {
-      margin: theme.spacing(1),
-    },
-    input: {
-      display: 'none',
-    },
-    demo: {
-      backgroundColor: theme.palette.background.paper,
-    },
-    title: {
-      margin: theme.spacing(4, 0, 2),
-    },
-  }),
-);
+function readFile(file: any): Promise<string> {
+  const reader = new FileReader();
 
-
-function generate(element: React.ReactElement) {
-  return [0, 1, 2].map(value =>
-    React.cloneElement(element, {
-      key: value,
-    }),
-  );
+  return new Promise((resolve) => {
+    reader.onload = () => {
+      resolve((reader as any).result.toString());
+    };
+    reader.readAsText(file);
+  });
 }
 
 export class Upload extends React.Component {
   state={
     items: [],
+    parsedItems: [],
     isLoading: false,
+    value: '',
+    mystr: '',
+    copied: false,
   }
+constructor(props: any){
+  super(props);
 
-  handleUnload(items: any) {
+  this.importText  = this.importText.bind(this);
+  this.onConvert  = this.onConvert.bind(this);
+
+}
+handleUnload(items: any) {
+  console.log(items)
     this.setState((state)=>{
       return {
         ...state,
         items,
       }
-    })
+    }, ()=>console.log(this.state))
   }
-  handleClick(event: any) {
-    event.handleUnload();
+
+  convert(myString: any) {
+    var viewBox;
+    var mystr = "<g>";
+    var str = "</g>";
+    var regex = RegExp(' d="([^"]+)"', "g");
+    while ((viewBox = regex.exec(myString)) !== null) {
+      mystr += "<path d=" + '"' + viewBox[1] + '" />';
+    }
+    return (mystr + str);
   }
+
+  onConvert = (event: any) => {
+    this.setState((state: any) => {
+      return {
+        ...state,
+        parsedItems: this.convert(state.items),
+      }
+    }, ()=>console.log(this.state));
+  }
+
+
+  onCopy = () => {
+    this.setState({copied: true});
+  }
+
+  render(){
+    return (
+      <form>
+        <div>
+      <input
+      type='file'
+      onChange={this.importText}/>
+      </div>
+      <div>
+      <textarea value={this.state.items}>
+        svg
+      </textarea>
+      </div>
+      <div>
+      <button type="button" onClick={this.onConvert}
+      >
+        convert
+      </button>
+      </div>
+    <div>
+        <textarea value={this.state.parsedItems}
+          onChange={({target: {value}}) => this.setState({value, copied: false})} />
+        {this.state.copied ? <span style={{color: 'red'}}>Copied.</span> : null}
+      </div>
+      <div>
+          <CopyToClipboard text={this.state.value}
+            onCopy={() => this.setState({ copied: true })}>
+            <button type="button">Copy</button>
+          </CopyToClipboard>
+      </div>
+      </form>
+    );
+  }
+
+  importText(event: any) {
+
+    const file = event.currentTarget.files.item(0);
+    readFile(file).then((content) => {
+         this.handleUnload(content);
+        }
+    )}
 }
 
 export default function InteractiveList() {
-  const handleClick = handleClick();
-  const classes = useStyles();
-  const [dense, setDense] = React.useState(false);
-  const [secondary, setSecondary] = React.useState(false);
 
-  return (
-    <div className={classes.root}>
-      <FormGroup row>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={dense}
-              onChange={event => setDense(event.target.checked)}
-              value="dense"
-            />
-          }
-          label="Enable dense"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={secondary}
-              onChange={event => setSecondary(event.target.checked)}
-              value="secondary"
-            />
-          }
-          label="Enable secondary text"
-        />
-      </FormGroup>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-        <Typography variant="h6" className={classes.title}>
-            Add your SVG
-            <label htmlFor="contained-button-file">
-            <input
-        accept="image/*"
-        className={classes.input}
-        id="contained-button-file"
-        multiple
-        type="file"
-      />
-      <label htmlFor="contained-button-file">
-        <Button variant="contained" component="span" className={classes.button} onClick={handleClick}>
-          Upload
-        </Button>
-      </label>
-      </label>
-          </Typography>
-          <div className={classes.demo}>
-            <List dense={dense}>
-              {generate(
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar>
-                      <FolderIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary="Single-line item"
-                    secondary={secondary ? 'Secondary text' : null}
-                  />
-                </ListItem>,
-              )}
-            </List>
-          </div>
-        </Grid>
-        <Grid item xs={12} md={6}>
-        <Typography variant="h6" className={classes.title}>
-            Download your converted file
-          </Typography>
-          <div className={classes.demo}>
-            <List dense={dense}>
-              {generate(
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar>
-                      <FolderIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary="Single-line item"
-                    secondary={secondary ? 'Secondary text' : null}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton edge="end" aria-label="download">
-                      <DownloadIcon />
-                    </IconButton>
-                    <IconButton edge="end" aria-label="delete">
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>,
-              )}
-            </List>
-          </div>
-        </Grid>
-      </Grid>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-        </Grid>
-      </Grid>
-    </div>
-  );
+return <Upload/>
 }
