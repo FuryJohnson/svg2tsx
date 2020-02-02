@@ -1,7 +1,7 @@
 import * as React from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Load from './Load';
-import Convert from './Convert';
+import Load from '../Load/Load';
+import Convert from '../Convert/Convert';
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import Card from "@material-ui/core/Card";

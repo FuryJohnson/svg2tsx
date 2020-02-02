@@ -1,5 +1,5 @@
 import * as React from "react";
-import TransferList from "./TransferList";
+import TransferList from "../TransferList/TransferList";
 
 export class Upload extends React.Component {
   constructor(props: any) {
